@@ -2,13 +2,32 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 import numpy as np
- 
+df = pd.read_csv('vehicles_us.csv')
 st.header('Vehicule types by manufacturer')
 st.write('we will provide you with the dataset on car sales advertisements')
 
+# Extract the manufacturer from the model and store it in a new column
+df["manufacturer"] = df["model"].str.split(" ", n = 1, expand = True)[0]
 
-df = pd.read_csv('vehicles_us.csv')
-df['manufacturer'] = df['model'].apply(lambda x: x.split()[0])
+manufacturer_choice=df['manufacturer'].unique()
+selected_manufacturer = st.selectbox('Select manufacturer:', manufacturer_choice)
+
+min_year,max_year=int(df['model_year'].min()),int(df['model_year'].max())
+year_range = st.slider(
+     "Choose years",
+     value=(min_year,max_year),min_value=min_year,max_value=max_year )
+
+actual_range=list(range(year_range[0],year_range[1]+1))
+
+#st.slider("choose years",value=(min_year,max_year),min_value=min_year,max_value=max_year )
+
+filtered_type=df[(df.manufacturer==selected_manufacturer)&(df.model_year.isin(list(actual_range)))]
+
+st.table(filtered_type)
+
+
+#df = pd.read_csv('vehicles_us.csv')
+df['manufacturer'] = df['manufacturer'].apply(lambda x: x.split()[0])
 
 fig = px.histogram(df, x= 'manufacturer', color='type')
 st.write(fig)
